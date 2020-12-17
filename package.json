@@ -1,0 +1,31 @@
+{
+  "name": "webpack-demo",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --watch",
+    "build": "webpack",
+    "start": "webpack serve --open firefox",
+    "server": "node server.js"
+  },
+  "keywords": [],
+  "author": "shakil",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^5.0.1",
+    "express": "^4.17.1",
+    "html-webpack-plugin": "^4.5.0",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.10.3",
+    "webpack-cli": "^4.2.0",
+    "webpack-dev-middleware": "^4.0.2",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.20",
+    "three": "^0.123.0"
+  }
+}
