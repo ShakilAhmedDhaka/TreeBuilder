@@ -1,12 +1,12 @@
 import './style.css';
-import _ from 'lodash';
+import _, { create } from 'lodash';
 import printMe from './print.js';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 
 let scene, camera, renderer, controls;
-
+let geoCylinder, matSphere;
 
 function originToBottom ( meshObj ) {
 
@@ -23,7 +23,7 @@ function originToBottom ( meshObj ) {
 
 
 
-function attachAtAngle(root, child, angle){
+function attachAtAngle(root, child, angle, pos){
     //root.scale.set(1,2,1);
     //originToBottom(root);
     root.geometry.computeBoundingBox();
@@ -40,7 +40,7 @@ function attachAtAngle(root, child, angle){
     childWrapper.add(child);
     root.add(childWrapper);
     childWrapper.position.set(positionToAttach.x,
-        positionToAttach.y - childDimY / 4.0,
+        positionToAttach.y - childDimY / pos,
         positionToAttach.z);
     
 
@@ -56,7 +56,24 @@ function attachAtAngle(root, child, angle){
 
 
 
+function createBranch(root, nBranch = 2, recur){
+    if(recur == 0)  return;
+
+    for(var i =0;i<2;i++){
+        var child = new THREE.Mesh(geoCylinder, matSphere);
+        attachAtAngle(root, child, 60, 4);
+        createBranch(child, 2, recur-1);
+        child = new THREE.Mesh(geoCylinder, matSphere);
+        attachAtAngle(root, child, 300, -4);
+        createBranch(child, 2, recur-1);
+    }
+}
+
+
 function init(){
+    const branch = 2;
+    const recursion = 2;
+
     const element = document.createElement('div');
     element.innerHTML = _.join(['Build your ', 'Dynamic Tree'], ' ');
     element.classList.add('hello');
@@ -86,7 +103,7 @@ function init(){
     document.body.appendChild(renderer.domElement);
 
 
-    var geoCylinder = new THREE.CylinderGeometry( 
+    geoCylinder = new THREE.CylinderGeometry( 
         1, 1, 20, 8
     );
 
@@ -94,20 +111,25 @@ function init(){
         color: 0x377B8C
     } );
 
+    matSphere = new THREE.MeshBasicMaterial({color: 0xff0000 });
+
 
     var tRoot = new THREE.Mesh(geoCylinder, matCylinder);
     scene.add(tRoot);
 
-    const matSphere = new THREE.MeshBasicMaterial({color: 0xff0000 });
-    var child = new THREE.Mesh(geoCylinder, matSphere);
+    createBranch(tRoot, 2, 2);
     
-    attachAtAngle(tRoot, child, 60);
+    // var child11 = new THREE.Mesh(geoCylinder, matSphere);
+    // var child12 = new THREE.Mesh(geoCylinder, matSphere);
+    
+    // attachAtAngle(tRoot, child11, 60, 4);
+    // attachAtAngle(tRoot, child12, 300, -4);
 
-    var child2 = new THREE.Mesh(geoCylinder, matSphere);
-    attachAtAngle(child, child2, 60);
+    // var child21 = new THREE.Mesh(geoCylinder, matSphere);
+    // attachAtAngle(child11, child21, 60,4);
 
-    var child3 = new THREE.Mesh(geoCylinder, matSphere);
-    attachAtAngle(child2, child3, 60);
+    // var child31 = new THREE.Mesh(geoCylinder, matSphere);
+    // attachAtAngle(child21, child31, 60,4);
 
     controls = new TrackballControls(camera, renderer.domElement);
     controls.addEventListener('change', render);
