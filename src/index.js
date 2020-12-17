@@ -7,8 +7,25 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 
 let scene, camera, renderer, controls;
 
-function attachAtAngle(root, child, angle){
 
+function originToBottom ( meshObj ) {
+
+    //1. Find the lowest `y` coordinate
+    meshObj.geometry.computeBoundingBox();
+    var shift = meshObj.geometry.boundingBox.min.y;
+
+    //2. Then you translate all your vertices up 
+    meshObj.translateOnAxis(new THREE.Vector3(0,1,0), -shift);
+
+    //finally
+    meshObj.verticesNeedUpdate = true;
+}
+
+
+
+function attachAtAngle(root, child, angle){
+    //root.scale.set(1,2,1);
+    //originToBottom(root);
     root.geometry.computeBoundingBox();
     var rootDim = root.geometry.boundingBox;
     child.geometry.computeBoundingBox();
@@ -17,21 +34,22 @@ function attachAtAngle(root, child, angle){
     var childDimY = childDim.max.y - childDim.min.y;
     var childDimZ = childDim.max.z - childDim.min.z;
 
-    var positionToAttach =  rootDim.min.add( rootDim.max.sub(rootDim.min).divideScalar(2.0) );
+    var positionToAttach = rootDim.min.add(rootDim.max);
 
     var childWrapper = new THREE.Object3D();
     childWrapper.add(child);
     root.add(childWrapper);
     childWrapper.position.set(positionToAttach.x,
-        positionToAttach.y,
+        positionToAttach.y - childDimY / 4.0,
         positionToAttach.z);
     
 
-    child.position.set(positionToAttach.x + childDimX / 2.0 ,
+    child.position.set(positionToAttach.x  ,
         positionToAttach.y + childDimY / 2.0,
-        positionToAttach.z + childDimZ / 2.0);
+        positionToAttach.z );
     //child.position.y = root.position.y + 20;
     childWrapper.rotation.z += angle * 3.1416 / 180.0 ;
+
 
     //root.scale.y += 1;
 }
