@@ -1,5 +1,5 @@
 import './style.css';
-import _, { create, isEmpty } from 'lodash';
+import _, { create, isBoolean, isEmpty } from 'lodash';
 import printMe from './print.js';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
@@ -13,6 +13,7 @@ const light = new THREE.AmbientLight ( 0xffffff, 1 );;
 let matCylinder, scene, camera, renderer, controls, raycaster;
 let geoCylinder, matSphere, tRoot, INTERSECTED;
 let objectsInScene = [];
+let pivots = [];
 
 
 function createUI(){
@@ -51,11 +52,25 @@ function createUI(){
     btn.style.marginLeft = "20px";
     btn.style.color = "#fb5858";
 
+
+    var rotateLabel = document.createElement('label');
+    rotateLabel.innerHTML = "Rotate!";
+    rotateLabel.style.marginLeft = "20px";
+    rotateLabel.style.color = "#377B8C";
+
+    const rotateBranches = document.createElement('input');
+    rotateBranches.type = 'checkbox';
+    rotateBranches.id = "rotateBox";
+    rotateBranches.style.marginLeft = "20px";
+    rotateBranches.style.color = "#fb5858";
+
     element.appendChild(branchLabel);
     element.appendChild(branchInput);
     element.appendChild(recurLabel);
     element.appendChild(recurInput);
     element.appendChild(btn);
+    element.appendChild(rotateLabel);
+    element.appendChild(rotateBranches);
 
     element.appendChild(renderer.domElement);
     document.body.appendChild(element);
@@ -98,6 +113,7 @@ function createTree(){
     scene.name = "scene";
     scene.add( light );
     objectsInScene.length = 0;
+    pivots.length = 0;
     objectsInScene.push(tRoot);
     scene.add(tRoot);
 
@@ -135,6 +151,7 @@ function attachAtAngle(root, child, angle, pos){
 
     var childWrapper = new THREE.Object3D();
     childWrapper.name = "pivot";
+    pivots.push(childWrapper);
     childWrapper.add(child);
     root.add(childWrapper);
     childWrapper.position.set(positionToAttach.x,
@@ -244,20 +261,34 @@ function init(){
 
 function animate(){
     requestAnimationFrame(animate);
-    
-    //cube.rotation.x += 0.01;
-    //cube.rotation.y += 0.01;
     controls.update();
     render();
-    //renderer.render(scene, camera);
 }
+
+
+
+function rotateBranchs(){
+    var isRotate = document.getElementById('rotateBox').checked;
+    console.log('ISROTATE: ' + isRotate);
+
+    if(isRotate){
+        console.log('rotating');
+        for(let i = 0;i<pivots.length;i++){
+            pivots[i].rotation.y += 0.01;
+        }
+    }
+   
+}
+
 
 
 function render(){
     camera.lookAt( scene.position );
 	camera.updateMatrixWorld();
 
-	raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera( mouse, camera );
+    
+    rotateBranchs();
 
 	const intersects = raycaster.intersectObjects( objectsInScene, false );
     console.log(`number of intersected objects: ${intersects.length}`);
