@@ -7,10 +7,12 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 
 const MAX_BRANCH = 4;
 const MAX_RECUR = 5;
+const mouse = new THREE.Vector2();
 
-let matCylinder, scene, camera, renderer, controls;
-let geoCylinder, matSphere, tRoot;
 
+let matCylinder, scene, camera, renderer, controls, raycaster;
+let geoCylinder, matSphere, tRoot, INTERSECTED;
+let objectsInScene = [];
 
 
 function createUI(){
@@ -54,6 +56,7 @@ function createUI(){
     element.appendChild(recurLabel);
     element.appendChild(recurInput);
     element.appendChild(btn);
+    element.appendChild(renderer.domElement);
     document.body.appendChild(element);
 }
 
@@ -88,7 +91,11 @@ function createTree(){
     );
 
     tRoot = new THREE.Mesh(geoCylinder, matCylinder);
+    tRoot.name = "root";
     scene = new THREE.Scene();
+    scene.name = "scene";
+    objectsInScene.length = 0;
+    objectsInScene.push(tRoot);
     scene.add(tRoot);
 
     // building tree
@@ -143,7 +150,6 @@ function attachAtAngle(root, child, angle, pos){
 }
 
 
-
 function createBranch(root, nBranch, recur){
     if(recur == 0){
         return;
@@ -170,6 +176,8 @@ function createBranch(root, nBranch, recur){
     
     for(var i =0;i<nBranch;i++){
         var child = new THREE.Mesh(geom, matSphere);
+        child.name = "child";
+        objectsInScene.push(child);
         attachAtAngle(root, child, angle, pos);
         createBranch(child, nBranch, recur-1);
 
@@ -183,9 +191,10 @@ function createBranch(root, nBranch, recur){
 
 
 function init(){
-    createUI();
 
     scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xf0f0f0 );
+    scene.name = "scene";
     camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
@@ -194,19 +203,27 @@ function init(){
     );
     camera.position.z = 100;
 
+    const light = new THREE.DirectionalLight( 0xffffff, 1 );
+    light.position.set( 1, 1, 1 ).normalize();
+    scene.add( light );
+
+    raycaster = new THREE.Raycaster();
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    matCylinder = new THREE.MeshBasicMaterial( {
+    
+    createUI();
+    
+    matCylinder = new THREE.MeshLambertMaterial( {
         color: 0x377B8C
     } );
-    matSphere = new THREE.MeshBasicMaterial({color: 0xff0000 });
+    matSphere = new THREE.MeshLambertMaterial({color: 0xff0000 });
     geoCylinder = new THREE.CylinderGeometry( 
         0.1, 1, 20 * 2, 8
     );
 
     tRoot = new THREE.Mesh(geoCylinder, matCylinder);
+    tRoot.name = "root";
+    objectsInScene.push(tRoot);
     scene.add(tRoot);
 
     createBranch(tRoot, 2, 2);
@@ -227,17 +244,84 @@ function animate(){
 }
 
 
+function render(){
+    // update the picking ray with the camera and mouse position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	const intersects = raycaster.intersectObjects( objectsInScene );
+    console.log(`number of intersected objects: ${intersects.length}`);
+
+    if ( intersects.length > 0 ) {
+
+        if ( INTERSECTED != intersects[ 0 ].object ) {
+
+            if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+            INTERSECTED = intersects[ 0 ].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex( 0x00ff00 );
+
+        }
+
+    } else {
+
+        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+        INTERSECTED = null;
+
+    }
+
+
+    // if ( intersects.length > 0 ) {
+
+    //     if ( INTERSECTED != intersects[ 0 ].object ) {
+
+    //         if ( INTERSECTED ) INTERSECTED.material.color.set( INTERSECTED.currentHex );
+
+    //         INTERSECTED = intersects[ 0 ].object;
+    //         INTERSECTED.currentHex = INTERSECTED.material.color;
+    //         INTERSECTED.material.color.set( 0x00ff00 );
+
+    //     }
+
+    // } else {
+
+    //     if ( INTERSECTED ) INTERSECTED.material.color.set( INTERSECTED.currentHex );
+
+    //     INTERSECTED = null;
+
+    // }
+
+    renderer.render( scene, camera );
+}
+
+
+
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function render(){
-    renderer.render(scene, camera);
+
+function onMouseMove( event ) {
+
+	// calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
+    event.preventDefault();
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    
+    console.log(mouse.x);
+    console.log(mouse.y);
+
 }
 
 window.addEventListener('resize', onWindowResize, false);
+window.addEventListener( 'mousemove', onMouseMove, false );
+window.requestAnimationFrame(render);
+
 
 init();
 animate();
