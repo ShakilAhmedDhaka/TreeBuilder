@@ -1,12 +1,100 @@
 import './style.css';
-import _, { create } from 'lodash';
+import _, { create, isEmpty } from 'lodash';
 import printMe from './print.js';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 
-let scene, camera, renderer, controls;
-let geoCylinder, matSphere;
+const MAX_BRANCH = 4;
+const MAX_RECUR = 5;
+
+let matCylinder, scene, camera, renderer, controls;
+let geoCylinder, matSphere, tRoot;
+
+
+
+function createUI(){
+    const element = document.createElement('div');
+    //element.innerHTML = _.join(['Build your ', 'Dynamic Tree'], ' ');
+    element.innerHTML = "TreeBuilder";
+    element.classList.add('hello');
+
+    var branchLabel = document.createElement('label');
+    branchLabel.innerHTML = "number of branches: ";
+    branchLabel.style.marginLeft = "20px";
+    branchLabel.style.color = "#377B8C";
+
+    var branchInput = document.createElement('input');
+    branchInput.type = 'number';
+    branchInput.min = 1;
+    branchInput.max = MAX_BRANCH;
+    branchInput.style.width = '40px';
+    branchInput.id = "branchInput";
+
+    var recurLabel = document.createElement('label');
+    recurLabel.innerHTML = "tree depth: ";
+    recurLabel.style.marginLeft = "20px";
+    recurLabel.style.color = "#377B8C";
+
+    var recurInput = document.createElement('input');
+    recurInput.type = 'number';
+    recurInput.min = 1;
+    recurInput.max = MAX_RECUR;
+    recurInput.style.width = '40px';
+    recurInput.id = "recurInput";
+
+    const btn = document.createElement('button');
+    btn.innerHTML = "RUN";
+    btn.onclick = createTree;
+    btn.style.marginLeft = "20px";
+    btn.style.color = "#fb5858";
+
+    element.appendChild(branchLabel);
+    element.appendChild(branchInput);
+    element.appendChild(recurLabel);
+    element.appendChild(recurInput);
+    element.appendChild(btn);
+    document.body.appendChild(element);
+}
+
+
+function getValueFromElement(elem, lim){
+    
+    console.log(elem.value);
+    var val = parseInt(elem.value);
+
+    if (isNaN(val) || isEmpty(elem.value) 
+        || val > lim || val < 1){
+            val = 2;
+            elem.value = "2";
+        }  
+    
+    return val;
+}
+
+
+
+function createTree(){
+    // handling input
+    var branchEl = document.getElementById("branchInput");
+    var recurEl = document.getElementById("recurInput");
+
+    var branch = getValueFromElement(branchEl, MAX_BRANCH);
+    var recursion = getValueFromElement(recurEl, MAX_RECUR);
+
+    // setting up root mesh
+    geoCylinder = new THREE.CylinderGeometry( 
+        0.1, 1, 20 * branch, 8
+    );
+
+    tRoot = new THREE.Mesh(geoCylinder, matCylinder);
+    scene = new THREE.Scene();
+    scene.add(tRoot);
+
+    // building tree
+    createBranch(tRoot, branch, recursion);
+}
+
 
 function originToBottom ( meshObj ) {
 
@@ -24,8 +112,6 @@ function originToBottom ( meshObj ) {
 
 
 function attachAtAngle(root, child, angle, pos){
-    //root.scale.set(1,2,1);
-    //originToBottom(root);
     root.geometry.computeBoundingBox();
     var rootDim = root.geometry.boundingBox;
     child.geometry.computeBoundingBox();
@@ -35,12 +121,13 @@ function attachAtAngle(root, child, angle, pos){
     var childDimZ = childDim.max.z - childDim.min.z;
 
     var positionToAttach = rootDim.min.add(rootDim.max);
+    positionToAttach.divideScalar(2.0);
 
     var childWrapper = new THREE.Object3D();
     childWrapper.add(child);
     root.add(childWrapper);
     childWrapper.position.set(positionToAttach.x,
-        positionToAttach.y - childDimY / pos,
+        pos,
         positionToAttach.z);
     
 
@@ -49,45 +136,56 @@ function attachAtAngle(root, child, angle, pos){
         positionToAttach.z );
     //child.position.y = root.position.y + 20;
     childWrapper.rotation.z += angle * 3.1416 / 180.0 ;
-
+    childWrapper.rotation.y += 2 * angle * 3.1416 / 180.0 ;
+    //childWrapper.rotation.z += angle * 3.1416 / 180.0 ;
 
     //root.scale.y += 1;
 }
 
 
 
-function createBranch(root, nBranch = 2, recur){
-    if(recur == 0)  return;
+function createBranch(root, nBranch, recur){
+    if(recur == 0){
+        return;
+    }
 
-    for(var i =0;i<2;i++){
-        var child = new THREE.Mesh(geoCylinder, matSphere);
-        attachAtAngle(root, child, 60, 4);
-        createBranch(child, 2, recur-1);
-        child = new THREE.Mesh(geoCylinder, matSphere);
-        attachAtAngle(root, child, 300, -4);
-        createBranch(child, 2, recur-1);
+    var angle = 60;
+    var height = nBranch * 10;
+    var gap = height / nBranch;
+    var pos = nBranch * -4;
+    let geom = geoCylinder;
+
+    if(recur == 2){
+        geom = new THREE.CylinderGeometry( 
+            0.1, 0.3, height, 8
+        );
+    }
+    else if (recur == 1) {
+        height = nBranch * 2;
+        geom = new THREE.CylinderGeometry( 
+            0.1, 0.3, height, 8
+        );
+    }
+    
+    
+    for(var i =0;i<nBranch;i++){
+        var child = new THREE.Mesh(geom, matSphere);
+        attachAtAngle(root, child, angle, pos);
+        createBranch(child, nBranch, recur-1);
+
+        if(angle == 60) angle = 300;
+        else    angle = 60;
+        pos = pos + gap;
+        //gap = gap * -1;
+        //pos = pos + gap;
     }
 }
 
 
 function init(){
-    const branch = 2;
-    const recursion = 2;
-
-    const element = document.createElement('div');
-    element.innerHTML = _.join(['Build your ', 'Dynamic Tree'], ' ');
-    element.classList.add('hello');
-
-    const btn = document.createElement('button');
-    btn.innerHTML = "test";
-    btn.onclick = printMe;
-    element.appendChild(btn);
-
+    createUI();
 
     scene = new THREE.Scene();
-    //scene.background = new THREE.Color(0xff000);
-    //scene.domElement.classList.add('hello');
-
     camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
@@ -98,38 +196,20 @@ function init(){
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
-
-    document.body.appendChild(element);
     document.body.appendChild(renderer.domElement);
 
-
-    geoCylinder = new THREE.CylinderGeometry( 
-        1, 1, 20, 8
-    );
-
-    const matCylinder = new THREE.MeshBasicMaterial( {
+    matCylinder = new THREE.MeshBasicMaterial( {
         color: 0x377B8C
     } );
-
     matSphere = new THREE.MeshBasicMaterial({color: 0xff0000 });
+    geoCylinder = new THREE.CylinderGeometry( 
+        0.1, 1, 20 * 2, 8
+    );
 
-
-    var tRoot = new THREE.Mesh(geoCylinder, matCylinder);
+    tRoot = new THREE.Mesh(geoCylinder, matCylinder);
     scene.add(tRoot);
 
     createBranch(tRoot, 2, 2);
-    
-    // var child11 = new THREE.Mesh(geoCylinder, matSphere);
-    // var child12 = new THREE.Mesh(geoCylinder, matSphere);
-    
-    // attachAtAngle(tRoot, child11, 60, 4);
-    // attachAtAngle(tRoot, child12, 300, -4);
-
-    // var child21 = new THREE.Mesh(geoCylinder, matSphere);
-    // attachAtAngle(child11, child21, 60,4);
-
-    // var child31 = new THREE.Mesh(geoCylinder, matSphere);
-    // attachAtAngle(child21, child31, 60,4);
 
     controls = new TrackballControls(camera, renderer.domElement);
     controls.addEventListener('change', render);
