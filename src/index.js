@@ -8,7 +8,7 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 const MAX_BRANCH = 4;
 const MAX_RECUR = 5;
 const mouse = new THREE.Vector2();
-
+const light = new THREE.AmbientLight ( 0xffffff, 1 );;
 
 let matCylinder, scene, camera, renderer, controls, raycaster;
 let geoCylinder, matSphere, tRoot, INTERSECTED;
@@ -16,8 +16,8 @@ let objectsInScene = [];
 
 
 function createUI(){
-    const element = document.createElement('div');
-    //element.innerHTML = _.join(['Build your ', 'Dynamic Tree'], ' ');
+    var element = document.createElement('div');
+
     element.innerHTML = "TreeBuilder";
     element.classList.add('hello');
 
@@ -56,6 +56,7 @@ function createUI(){
     element.appendChild(recurLabel);
     element.appendChild(recurInput);
     element.appendChild(btn);
+
     element.appendChild(renderer.domElement);
     document.body.appendChild(element);
 }
@@ -93,7 +94,9 @@ function createTree(){
     tRoot = new THREE.Mesh(geoCylinder, matCylinder);
     tRoot.name = "root";
     scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xf0f0f0 );
     scene.name = "scene";
+    scene.add( light );
     objectsInScene.length = 0;
     objectsInScene.push(tRoot);
     scene.add(tRoot);
@@ -131,6 +134,7 @@ function attachAtAngle(root, child, angle, pos){
     positionToAttach.divideScalar(2.0);
 
     var childWrapper = new THREE.Object3D();
+    childWrapper.name = "pivot";
     childWrapper.add(child);
     root.add(childWrapper);
     childWrapper.position.set(positionToAttach.x,
@@ -175,8 +179,8 @@ function createBranch(root, nBranch, recur){
     
     
     for(var i =0;i<nBranch;i++){
-        var child = new THREE.Mesh(geom, matSphere);
-        child.name = "child";
+        var child = new THREE.Mesh(geom, matSphere.clone());
+        child.name = "child" + i + recur;
         objectsInScene.push(child);
         attachAtAngle(root, child, angle, pos);
         createBranch(child, nBranch, recur-1);
@@ -196,19 +200,19 @@ function init(){
     scene.background = new THREE.Color( 0xf0f0f0 );
     scene.name = "scene";
     camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        .01,
-        1000
+        70, 
+        window.innerWidth / window.innerHeight, 
+        1, 
+        10000
     );
     camera.position.z = 100;
 
-    const light = new THREE.DirectionalLight( 0xffffff, 1 );
-    light.position.set( 1, 1, 1 ).normalize();
+    //light.position.set( 1, 1, 1 ).normalize();
     scene.add( light );
 
     raycaster = new THREE.Raycaster();
     renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize(window.innerWidth, window.innerHeight);
     
     createUI();
@@ -230,6 +234,11 @@ function init(){
 
     controls = new TrackballControls(camera, renderer.domElement);
     controls.addEventListener('change', render);
+
+    console.log("total objects in scene: " + objectsInScene.length);
+    for(let i = 0;i<objectsInScene.length;i++){
+        console.log(objectsInScene[i].name);
+    }
 }
 
 
@@ -245,12 +254,15 @@ function animate(){
 
 
 function render(){
-    // update the picking ray with the camera and mouse position
+    camera.lookAt( scene.position );
+	camera.updateMatrixWorld();
+
 	raycaster.setFromCamera( mouse, camera );
 
 	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects( objectsInScene );
+	const intersects = raycaster.intersectObjects( objectsInScene, false );
     console.log(`number of intersected objects: ${intersects.length}`);
+
 
     if ( intersects.length > 0 ) {
 
@@ -258,6 +270,7 @@ function render(){
 
             if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
 
+            console.log(`object name: ${intersects[0].object.name}`);
             INTERSECTED = intersects[ 0 ].object;
             INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
             INTERSECTED.material.emissive.setHex( 0x00ff00 );
@@ -272,27 +285,6 @@ function render(){
 
     }
 
-
-    // if ( intersects.length > 0 ) {
-
-    //     if ( INTERSECTED != intersects[ 0 ].object ) {
-
-    //         if ( INTERSECTED ) INTERSECTED.material.color.set( INTERSECTED.currentHex );
-
-    //         INTERSECTED = intersects[ 0 ].object;
-    //         INTERSECTED.currentHex = INTERSECTED.material.color;
-    //         INTERSECTED.material.color.set( 0x00ff00 );
-
-    //     }
-
-    // } else {
-
-    //     if ( INTERSECTED ) INTERSECTED.material.color.set( INTERSECTED.currentHex );
-
-    //     INTERSECTED = null;
-
-    // }
-
     renderer.render( scene, camera );
 }
 
@@ -305,22 +297,24 @@ function onWindowResize() {
 }
 
 
-function onMouseMove( event ) {
+function onDocumentMouseMove( event ) {
 
-	// calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
     event.preventDefault();
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    
+
+    // mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    // mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    mouse.x = ( ( event.clientX - renderer.domElement.offsetLeft ) / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( ( event.clientY - renderer.domElement.offsetTop ) / renderer.domElement.clientHeight ) * 2 + 1;
+
+
     console.log(mouse.x);
     console.log(mouse.y);
-
-}
+} 
 
 window.addEventListener('resize', onWindowResize, false);
-window.addEventListener( 'mousemove', onMouseMove, false );
-window.requestAnimationFrame(render);
+document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+//window.requestAnimationFrame(render);
 
 
 init();
