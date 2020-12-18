@@ -259,7 +259,6 @@ function render(){
 
 	raycaster.setFromCamera( mouse, camera );
 
-	// calculate objects intersecting the picking ray
 	const intersects = raycaster.intersectObjects( objectsInScene, false );
     console.log(`number of intersected objects: ${intersects.length}`);
 
@@ -310,11 +309,34 @@ function onDocumentMouseMove( event ) {
 
     console.log(mouse.x);
     console.log(mouse.y);
-} 
+}
+
+
+function onDocumentMouseDown(event){
+    console.log("mouse clicked");
+
+    if(INTERSECTED){
+        console.log("branch selected");
+        var geom = new THREE.CylinderGeometry( 
+            0.1, .15, 4, 8
+        );
+        var child = new THREE.Mesh(geom, matSphere.clone());
+        //child.name = "child" + i + recur;
+        objectsInScene.push(child);
+
+        console.log(INTERSECTED);
+        var pos = INTERSECTED.position.y;
+        console.log("position: " + pos/2);
+        attachAtAngle(INTERSECTED, child, 60, -pos/2);
+        //attachAtAngle(INTERSECTED, )
+    }
+    
+}
+
 
 window.addEventListener('resize', onWindowResize, false);
 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-//window.requestAnimationFrame(render);
+document.addEventListener('click', onDocumentMouseDown, false);
 
 
 init();
