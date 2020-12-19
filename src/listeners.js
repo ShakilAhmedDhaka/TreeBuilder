@@ -26,19 +26,24 @@ export function onDocumentMouseDown(event){
 
     if(globalObj.INTERSECTED){
         //console.log("branch selected");
-        var geom = new THREE.CylinderGeometry( 
-            0.1, .15, 4, 8
-        );
-        var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
-        globalObj.objectsInScene.push(child);
 
         //console.log(globalObj.INTERSECTED);
         var globalPos = globalObj.intersectPoint;
         var localPos = globalObj.INTERSECTED.worldToLocal(globalPos);
-        console.log(globalPos);
-        console.log(localPos);
-        //console.log("position x: " + pos.x + " y: " + pos.y + " z: " + pos.z);
-        Tree.attachAtAngle(globalObj.INTERSECTED, child, 60, localPos, 2);
+        var rootHeight = globalObj.INTERSECTED.geometry.parameters.height;
+        var childHeight = Math.max(rootHeight * 0.50, 4);
+        //var offset = childHeight / 2;
+
+        
+        var geom = new THREE.CylinderGeometry( 
+            0.1, 0.15 , childHeight, 8
+        );
+        
+        var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
+        globalObj.objectsInScene.push(child);
+
+        console.log("position x: " + localPos.x + " y: " + localPos.y + " z: " + localPos.z);
+        Tree.attachAtAngle(globalObj.INTERSECTED, child, 60, localPos, childHeight * 0.50);
     }
     
 }

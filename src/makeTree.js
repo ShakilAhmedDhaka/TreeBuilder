@@ -68,7 +68,7 @@ export function attachAtAngle(root, child, angle, pos, offset){
         offset,
         0 );
 
-    
+    if(pos.x > 0)   childWrapper.rotation.y += 180 * 3.1416 / 180.0 ;
     childWrapper.rotation.z += angle * 3.1416 / 180.0 ;
     //childWrapper.rotation.y += 3 * angle * 3.1416 / 180.0 ;
 }
