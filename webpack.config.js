@@ -6,7 +6,10 @@ module.exports = {
   mode: 'development',
   entry: {
     index: './src/index.js',
-    print: './src/print.js'
+    listeners: './src/listeners.js',
+    ui: './src/createUI.js',
+    tree: './src/makeTree.js',
+    vars: './src/variables.js',
   },
   devtool: 'inline-source-map',
   devServer: {
