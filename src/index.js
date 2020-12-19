@@ -47,7 +47,7 @@ function init(){
     globalObj.scene.add(globalObj.tRoot);
 
     Tree.createBranch(globalObj.tRoot, 2, 2);
-
+    
     globalObj.mouse = new THREE.Vector2();
     globalObj.controls = new TrackballControls(globalObj.camera, globalObj.renderer.domElement);
     globalObj.controls.addEventListener('change', render);
@@ -76,6 +76,7 @@ function render(){
 
     if ( intersects.length > 0 ) {
 
+        globalObj.intersectPoint = intersects[0].point;
         if ( globalObj.INTERSECTED != intersects[ 0 ].object ) {
 
             if ( globalObj.INTERSECTED ) globalObj.INTERSECTED.material.emissive.setHex( globalObj.INTERSECTED.currentHex );

@@ -22,19 +22,23 @@ export function onDocumentMouseMove( event ) {
 
 
 export function onDocumentMouseDown(event){
-    console.log("mouse clicked");
+    //console.log("mouse clicked");
 
     if(globalObj.INTERSECTED){
-        console.log("branch selected");
+        //console.log("branch selected");
         var geom = new THREE.CylinderGeometry( 
             0.1, .15, 4, 8
         );
         var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
         globalObj.objectsInScene.push(child);
 
-        console.log(globalObj.INTERSECTED);
-        var pos = globalObj.INTERSECTED.position.y;
-        Tree.attachAtAngle(globalObj.INTERSECTED, child, 60, pos/3);
+        //console.log(globalObj.INTERSECTED);
+        var globalPos = globalObj.intersectPoint;
+        var localPos = globalObj.INTERSECTED.worldToLocal(globalPos);
+        console.log(globalPos);
+        console.log(localPos);
+        //console.log("position x: " + pos.x + " y: " + pos.y + " z: " + pos.z);
+        Tree.attachAtAngle(globalObj.INTERSECTED, child, 60, localPos, 2);
     }
     
 }

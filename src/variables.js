@@ -11,12 +11,13 @@ var globalObj = {
     matSphere: null,
     tRoot: null,
     INTERSECTED: null,
+    intersectPoint: null,
     objectsInScene: null,
     pivots: null,
 };
 
 Object.defineProperty( globalObj, "MAX_BRANCH", {
-    value: 4,
+    value: 5,
     writable: false,
 });
 

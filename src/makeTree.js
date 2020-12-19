@@ -28,7 +28,7 @@ export function createTree(){
 
     // setting up root mesh
     globalObj.geoCylinder = new THREE.CylinderGeometry( 
-        0.1, 1, 20 * branch, 8
+        0.1, 1, 20 * branch * recursion, 8
     );
 
     globalObj.tRoot = new THREE.Mesh(globalObj.geoCylinder, globalObj.matCylinder);
@@ -44,38 +44,33 @@ export function createTree(){
 
     // building tree
     createBranch(globalObj.tRoot, branch, recursion);
+    
+    document.getElementById('rotateBox').checked = true;
+    for(let i = 0;i<100;i++) rotateBranchs();
+    document.getElementById('rotateBox').checked = false;
 }
 
 
 
-export function attachAtAngle(root, child, angle, pos){
-    root.geometry.computeBoundingBox();
-    var rootDim = root.geometry.boundingBox;
-    child.geometry.computeBoundingBox();
-    var childDim = child.geometry.boundingBox;
-    var childDimX = childDim.max.x - childDim.min.x;
-    var childDimY = childDim.max.y - childDim.min.y;
-    var childDimZ = childDim.max.z - childDim.min.z;
-
-    var positionToAttach = rootDim.min.add(rootDim.max);
-    positionToAttach.divideScalar(2.0);
-
+export function attachAtAngle(root, child, angle, pos, offset){
     var childWrapper = new THREE.Object3D();
     childWrapper.name = "pivot";
     globalObj.pivots.push(childWrapper);
     childWrapper.add(child);
     root.add(childWrapper);
-    childWrapper.position.set(positionToAttach.x,
-        pos,
-        positionToAttach.z);
+
+    childWrapper.position.set(pos.x,
+        pos.y,
+        pos.z);
     
 
-    child.position.set(positionToAttach.x  ,
-        positionToAttach.y + childDimY / 2.0,
-        positionToAttach.z );
+    child.position.set(0  ,
+        offset,
+        0 );
 
+    
     childWrapper.rotation.z += angle * 3.1416 / 180.0 ;
-    childWrapper.rotation.y += 3 * angle * 3.1416 / 180.0 ;
+    //childWrapper.rotation.y += 3 * angle * 3.1416 / 180.0 ;
 }
 
 
@@ -85,17 +80,17 @@ export function createBranch(root, nBranch, recur){
     }
 
     var angle = 60;
-    var height = nBranch * 10;
-    var gap = height / nBranch;
-    var pos = nBranch * -4;
+    var rootHeight = root.geometry.parameters.height * 0.9;
+    var posY = -(rootHeight * 0.8) / 2;
+    var gap = (rootHeight * 0.8) / nBranch;
+    var height = rootHeight * 0.50;
     let geom = globalObj.geoCylinder;
 
-    if(recur == 2){
-        geom = new THREE.CylinderGeometry( 
-            0.1, 0.3, height, 8
-        );
-    }
-    else if (recur == 1) {
+    geom = new THREE.CylinderGeometry( 
+        0.1, 0.3, height, 8
+    );
+    
+    if (recur == 1) {
         height = nBranch * 2;
         geom = new THREE.CylinderGeometry( 
             0.1, 0.3, height, 8
@@ -103,16 +98,18 @@ export function createBranch(root, nBranch, recur){
     }
     
     
+    var pos;
     for(var i =0;i<nBranch;i++){
         var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
         child.name = "child" + i + recur;
         globalObj.objectsInScene.push(child);
-        attachAtAngle(root, child, angle, pos);
+        pos = new THREE.Vector3(0, posY, 0);
+        attachAtAngle(root, child, angle, pos, height/2);
         createBranch(child, nBranch, recur-1);
 
         if(angle == 60) angle = 300;
         else    angle = 60;
-        pos = pos + gap;
+        posY = posY + gap;
     }
 }
 
