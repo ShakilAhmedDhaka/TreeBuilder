@@ -17,12 +17,12 @@ var globalObj = {
 };
 
 Object.defineProperty( globalObj, "MAX_BRANCH", {
-    value: 5,
+    value: 6,
     writable: false,
 });
 
 Object.defineProperty( globalObj, "MAX_RECUR", {
-    value: 5,
+    value: 6,
     writable: false,
 });
 

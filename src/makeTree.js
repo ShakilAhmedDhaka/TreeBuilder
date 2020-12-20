@@ -77,50 +77,105 @@ export function attachAtAngle(root, child, angle, pos, offset){
 
 
 export function createBranch(root, nBranch, recur){
-    if(recur == 0){
-        return;
-    }
+    // Depth First Search
+
+    // if(recur == 0){
+    //     return;
+    // }
+
+    // let angle = 60;
+    // let rootHeight = root.geometry.parameters.height * 0.9;
+    // let posY = -(rootHeight * 0.8) / 2;
+    // let gap = (rootHeight * 0.8) / nBranch;
+    // let height = rootHeight * 0.50;
+    // let geom = globalObj.geoCylinder;
+    // let baseRadius = 1;
+    // let pos;
+
+
+    // for(var i =0;i<nBranch;i++){
+    //     geom = new THREE.CylinderGeometry( 
+    //         0.1, baseRadius, height, 8
+    //     );
+    //     if (recur == 1) {
+    //         height = nBranch * 2;
+    //         geom = new THREE.CylinderGeometry( 
+    //             0.1, 0.3, height, 8
+    //         );
+    //     }
+
+        
+    //     let child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xff0000 }));
+    //     child.name = "child" + i + recur;
+    //     globalObj.objectsInScene.push(child);
+    //     pos = new THREE.Vector3(0, posY, 0);
+    //     attachAtAngle(root, child, angle, pos, height/2);
+    //     createBranch(child, nBranch, recur-1);
+
+    //     if(angle == 60) angle = 300;
+    //     else    angle = 60;
+    //     posY = posY + gap;
+    //     baseRadius = Math.max(baseRadius - 0.1, 0.1);
+    // }
+
+
+    // Breadth First Search
+    let nodesIndex = [];
+    let nodes = [];
+    let curIndex = 0;
+    nodes.push(root);
+    nodesIndex.push(curIndex);
 
     let angle = 60;
-    let rootHeight = root.geometry.parameters.height * 0.9;
-    let posY = -(rootHeight * 0.8) / 2;
-    let gap = (rootHeight * 0.8) / nBranch;
-    let height = rootHeight * 0.50;
-    let geom = globalObj.geoCylinder;
-    let baseRadius = 1;
-    let pos;
+    
+    
+    while(nodes.length != 0){
 
+        root = nodes.shift();
+        let rootIndex = nodesIndex.shift();
 
-    for(var i =0;i<nBranch;i++){
+        let rootHeight = root.geometry.parameters.height * 0.9;
+        let posY = -(rootHeight * 0.8) / 2;
+        let gap = (rootHeight * 0.8) / nBranch;
+        let height = rootHeight * 0.50;
+        let geom = globalObj.geoCylinder;
+        let baseRadius = 1;
         geom = new THREE.CylinderGeometry( 
             0.1, baseRadius, height, 8
         );
-        if (recur == 1) {
-            height = nBranch * 2;
-            geom = new THREE.CylinderGeometry( 
-                0.1, 0.3, height, 8
-            );
-        }
-
         
-        var child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xff0000 }));
-        child.name = "child" + i + recur;
-        globalObj.objectsInScene.push(child);
-        pos = new THREE.Vector3(0, posY, 0);
-        attachAtAngle(root, child, angle, pos, height/2);
-        createBranch(child, nBranch, recur-1);
+        for(let i = 0;i<nBranch;i++){
 
-        if(angle == 60) angle = 300;
-        else    angle = 60;
-        posY = posY + gap;
-        baseRadius = Math.max(baseRadius - 0.1, 0.1);
+            if(rootIndex >= 1 + Math.pow(nBranch, recur-2) )    continue;
+
+            curIndex += 1;
+            if (curIndex >= 1 + Math.pow(nBranch, recur-2) ) {
+                height = nBranch * 2;
+                geom = new THREE.CylinderGeometry( 
+                    0.1, 0.3, height, 8
+                );
+            }
+    
+            let child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xff0000 }));
+            child.name = "child" + curIndex;
+            globalObj.objectsInScene.push(child);
+            let pos = new THREE.Vector3(0, posY, 0);
+            nodes.push(child);
+            nodesIndex.push(curIndex);
+            attachAtAngle(root, child, angle, pos, height/2);
+    
+            if(angle == 60) angle = 300;
+            else    angle = 60;
+            posY = posY + gap;
+            baseRadius = Math.max(baseRadius - 0.1, 0.1);
+        }
     }
 }
 
 function getValueFromElement(elem, lim){
     
     //console.log(elem.value);
-    var val = parseInt(elem.value);
+    let val = parseInt(elem.value);
 
     if (isNaN(val) || isEmpty(elem.value) 
         || val > lim || val < 1){
