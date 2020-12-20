@@ -37,9 +37,9 @@ export function onDocumentMouseDown(event){
         var childHeight = Math.max(heightAdjuster , 4);
         //var offset = childHeight / 2;
 
-        
+        let fromTop = rootHeight - fromZero;        
         var geom = new THREE.CylinderGeometry( 
-            0.1, 0.5 , childHeight, 8
+            0.1, fromTop / rootHeight , childHeight, 8
         );
         
         var child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffff00 }));
