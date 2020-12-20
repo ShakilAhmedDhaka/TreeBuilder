@@ -10,3 +10,4 @@ Node
 2. Go to the directory.
 3. run command: npm install
 4. run command: npm run server
+5. open 'http://localhost:3000/' in the brower
