@@ -28,7 +28,7 @@ export function createTree(){
 
     // setting up root mesh
     globalObj.geoCylinder = new THREE.CylinderGeometry( 
-        0.1, 1, 20 * branch * recursion, 8
+        0.1 * branch, branch, 20 * branch * recursion, 8
     );
 
     globalObj.tRoot = new THREE.Mesh(globalObj.geoCylinder, globalObj.matCylinder);
@@ -81,28 +81,29 @@ export function createBranch(root, nBranch, recur){
         return;
     }
 
-    var angle = 60;
-    var rootHeight = root.geometry.parameters.height * 0.9;
-    var posY = -(rootHeight * 0.8) / 2;
-    var gap = (rootHeight * 0.8) / nBranch;
-    var height = rootHeight * 0.50;
+    let angle = 60;
+    let rootHeight = root.geometry.parameters.height * 0.9;
+    let posY = -(rootHeight * 0.8) / 2;
+    let gap = (rootHeight * 0.8) / nBranch;
+    let height = rootHeight * 0.50;
     let geom = globalObj.geoCylinder;
+    let baseRadius = 1;
+    let pos;
 
-    geom = new THREE.CylinderGeometry( 
-        0.1, 0.3, height, 8
-    );
-    
-    if (recur == 1) {
-        height = nBranch * 2;
-        geom = new THREE.CylinderGeometry( 
-            0.1, 0.3, height, 8
-        );
-    }
-    
-    
-    var pos;
+
     for(var i =0;i<nBranch;i++){
-        var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
+        geom = new THREE.CylinderGeometry( 
+            0.1, baseRadius, height, 8
+        );
+        if (recur == 1) {
+            height = nBranch * 2;
+            geom = new THREE.CylinderGeometry( 
+                0.1, 0.3, height, 8
+            );
+        }
+
+        
+        var child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xff0000 }));
         child.name = "child" + i + recur;
         globalObj.objectsInScene.push(child);
         pos = new THREE.Vector3(0, posY, 0);
@@ -112,6 +113,7 @@ export function createBranch(root, nBranch, recur){
         if(angle == 60) angle = 300;
         else    angle = 60;
         posY = posY + gap;
+        baseRadius = Math.max(baseRadius - 0.1, 0.1);
     }
 }
 

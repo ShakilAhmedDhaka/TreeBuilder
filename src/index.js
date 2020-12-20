@@ -10,6 +10,8 @@ import createUI from './createUI.js';
 
 function init(){
 
+    var initialBranches = 4, initialDepth = 4;
+
     globalObj.scene = new THREE.Scene();
     globalObj.scene.background = new THREE.Color( 0xf0f0f0 );
     globalObj.scene.name = "scene";
@@ -38,7 +40,7 @@ function init(){
     } );
     globalObj.matSphere = new THREE.MeshLambertMaterial({color: 0xff0000 });
     globalObj.geoCylinder = new THREE.CylinderGeometry( 
-        0.1, 1, 20 * 3 * 3, 8
+        0.1 * initialBranches, initialBranches, 20 * initialBranches * initialDepth, 8
     );
 
     globalObj.tRoot = new THREE.Mesh(globalObj.geoCylinder, globalObj.matCylinder);
@@ -46,11 +48,15 @@ function init(){
     globalObj.objectsInScene.push(globalObj.tRoot);
     globalObj.scene.add(globalObj.tRoot);
 
-    Tree.createBranch(globalObj.tRoot, 3, 3);
+
+    document.getElementById("branchInput").value = initialBranches;
+    document.getElementById("recurInput").value = initialDepth;
+    Tree.createBranch(globalObj.tRoot, initialBranches, initialDepth);
     document.getElementById('rotateBox').checked = true;
     for(let i = 0;i<50;i++) Tree.rotateBranchs();
     document.getElementById('rotateBox').checked = false;
     
+
     globalObj.mouse = new THREE.Vector2();
     globalObj.controls = new TrackballControls(globalObj.camera, globalObj.renderer.domElement);
     globalObj.controls.addEventListener('change', render);

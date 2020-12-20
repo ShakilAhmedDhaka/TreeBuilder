@@ -30,19 +30,24 @@ export function onDocumentMouseDown(event){
         //console.log(globalObj.INTERSECTED);
         var globalPos = globalObj.intersectPoint;
         var localPos = globalObj.INTERSECTED.worldToLocal(globalPos);
-        var rootHeight = globalObj.INTERSECTED.geometry.parameters.height;
-        var childHeight = Math.max(rootHeight * 0.50, 4);
+        let root = globalObj.INTERSECTED;
+        var rootHeight = root.geometry.parameters.height;
+        let fromZero = rootHeight / 2.0 + localPos.y;
+        let heightAdjuster = (rootHeight - fromZero) * 0.50;
+        var childHeight = Math.max(heightAdjuster , 4);
         //var offset = childHeight / 2;
 
         
         var geom = new THREE.CylinderGeometry( 
-            0.1, 0.2 , childHeight, 8
+            0.1, 0.5 , childHeight, 8
         );
         
-        var child = new THREE.Mesh(geom, globalObj.matSphere.clone());
+        var child = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffff00 }));
         globalObj.objectsInScene.push(child);
-
-        console.log("position x: " + localPos.x + " y: " + localPos.y + " z: " + localPos.z);
+        
+        console.log("root height: " + rootHeight);
+        console.log("height for zero: " + fromZero);
+        //console.log("position x: " + localPos.x + " y: " + localPos.y + " z: " + localPos.z);
         Tree.attachAtAngle(globalObj.INTERSECTED, child, 60, localPos, childHeight * 0.50);
     }
     
