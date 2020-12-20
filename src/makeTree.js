@@ -48,6 +48,8 @@ export function createTree(){
     document.getElementById('rotateBox').checked = true;
     for(let i = 0;i<100;i++) rotateBranchs();
     document.getElementById('rotateBox').checked = false;
+
+    globalObj.camera.position.z = 100 * branch;
 }
 
 

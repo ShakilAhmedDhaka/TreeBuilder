@@ -36,7 +36,7 @@ export function onDocumentMouseDown(event){
 
         
         var geom = new THREE.CylinderGeometry( 
-            0.1, 0.15 , childHeight, 8
+            0.1, 0.2 , childHeight, 8
         );
         
         var child = new THREE.Mesh(geom, globalObj.matSphere.clone());

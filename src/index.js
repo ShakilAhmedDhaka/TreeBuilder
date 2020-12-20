@@ -19,7 +19,7 @@ function init(){
         1, 
         10000
     );
-    globalObj.camera.position.z = 100;
+    globalObj.camera.position.z = 300;
 
     globalObj.light = new THREE.AmbientLight ( 0xffffff, 1 );
     globalObj.scene.add( globalObj.light );
@@ -38,7 +38,7 @@ function init(){
     } );
     globalObj.matSphere = new THREE.MeshLambertMaterial({color: 0xff0000 });
     globalObj.geoCylinder = new THREE.CylinderGeometry( 
-        0.1, 1, 20 * 2, 8
+        0.1, 1, 20 * 3 * 3, 8
     );
 
     globalObj.tRoot = new THREE.Mesh(globalObj.geoCylinder, globalObj.matCylinder);
@@ -46,7 +46,10 @@ function init(){
     globalObj.objectsInScene.push(globalObj.tRoot);
     globalObj.scene.add(globalObj.tRoot);
 
-    Tree.createBranch(globalObj.tRoot, 2, 2);
+    Tree.createBranch(globalObj.tRoot, 3, 3);
+    document.getElementById('rotateBox').checked = true;
+    for(let i = 0;i<50;i++) Tree.rotateBranchs();
+    document.getElementById('rotateBox').checked = false;
     
     globalObj.mouse = new THREE.Vector2();
     globalObj.controls = new TrackballControls(globalObj.camera, globalObj.renderer.domElement);
