@@ -1,10 +1,33 @@
-.hello {
-    color: red;
-}
-.body{
-    background-color: greenyellow;
+label{
+    color: #377B8C;
+    margin-left: 20px;
+    font-size:large;
 }
 
-.label{
-    background-color: greenyellow;
+
+select{
+   border-radius: 5px;
+    border: 2px solid #377B8C;
+    width: 100px;
+    height: 30px;
+    margin-bottom: 5px;
+}
+
+button{
+    border: none;
+    color: #377B8C;
+    text-decoration: none;
+    cursor: pointer;
+    margin-left: 40px;
+    margin-bottom: 5px;
+    height: 30px;
+    width: 100px;
+}
+
+button:active{
+    color: palevioletred;
+}
+
+button:active {
+    color: red;
 }

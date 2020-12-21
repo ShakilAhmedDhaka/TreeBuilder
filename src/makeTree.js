@@ -154,7 +154,13 @@ function BFS(root, nBranch, depth){
 
 
 function isLeaf(indx, nBranch, depth){
-    if(indx >= 1 + Math.pow(nBranch, depth-1) ) return true;
+    let nonLeaves = 1;
+    depth -= 1;
+    while(depth > 0){
+        depth-=1
+        nonLeaves += Math.pow(nBranch, depth);
+    }
+    if(indx >= nonLeaves ) return true;
     return false;
 }
 
