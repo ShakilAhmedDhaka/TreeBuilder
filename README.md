@@ -1,9 +1,12 @@
 # TreeBuilder
 A threejs application for building a tree with user interaction
 
+![Tree Builder](resources/tree.jpg)
+
+
 ## Requirements
 
-Node
+Node.js
 
 ## Installation
 1. Clone the repository.

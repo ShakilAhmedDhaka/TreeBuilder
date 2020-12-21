@@ -157,8 +157,8 @@ function isLeaf(indx, nBranch, depth){
     let nonLeaves = 1;
     depth -= 1;
     while(depth > 0){
-        depth-=1
         nonLeaves += Math.pow(nBranch, depth);
+        depth-=1;
     }
     if(indx >= nonLeaves ) return true;
     return false;
